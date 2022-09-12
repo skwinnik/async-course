@@ -1,0 +1,7 @@
+auth:
+  username: user
+  password: qwerty
+
+persistence:
+  enabled: true
+  storageClass: nfs-client
