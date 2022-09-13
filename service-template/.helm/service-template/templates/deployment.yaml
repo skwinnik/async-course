@@ -47,6 +47,14 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /app/appsettings.Production.json
+              name: appsettings
+              subPath: appsettings.Production.json
+      volumes:
+        - name: appsettings
+          configMap:
+            name: service-template-configmap
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

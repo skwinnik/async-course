@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-template-configmap
+data:
+  appsettings.Production.json: |
+    {
+      "appConfiguration": {
+        "RabbitConnectionString": "host=rabbitmq:5672;virtualHost=/;username=user;password=qwerty"
+      }
+    }
