@@ -5,6 +5,7 @@ namespace ServiceTemplate.Controllers {
   [Route("[controller]")]
   public class HealthController : ControllerBase {
 
+    [HttpGet]
     [Route("[action]")]
     public ActionResult Ping() {
       return this.Ok();
