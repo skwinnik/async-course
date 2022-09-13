@@ -1,0 +1,8 @@
+persistence:
+  enabled: true
+  storageClass: nfs-client
+
+zookeeper:
+  persistence:
+    enabled: true
+    storageClass: nfs-client
