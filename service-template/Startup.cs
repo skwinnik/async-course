@@ -21,7 +21,7 @@ namespace ServiceTemplate {
       services.AddEndpointsApiExplorer();
       services.AddSwaggerGen();
 
-      services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
+      services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString, r => r.EnableConsoleLogger()));
 
       services.AddHostedService<SubscriptionBackgroundService>();
     }

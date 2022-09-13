@@ -1,3 +1,5 @@
+using ServiceTemplate.Messages;
+
 namespace ServiceTemplate.BackgroundServices {
   public class SubscriptionBackgroundService : BackgroundService {
     private readonly EasyNetQ.IBus bus;
@@ -7,8 +9,8 @@ namespace ServiceTemplate.BackgroundServices {
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
       try {
-        await bus.PubSub.SubscribeAsync<Test>("sub",
-          (msg, tkn) => Task.Factory.StartNew(() => Console.WriteLine("msg!")),
+        await bus.PubSub.SubscribeAsync<TestMessage>("sub",
+          (msg, tkn) => Task.Factory.StartNew(() => Console.WriteLine(msg.Body)),
           c => c.WithAutoDelete(),
           stoppingToken);
       }
@@ -19,6 +21,4 @@ namespace ServiceTemplate.BackgroundServices {
     }
 
   }
-
-  public class Test { }
 }
