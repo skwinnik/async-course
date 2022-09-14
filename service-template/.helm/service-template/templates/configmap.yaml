@@ -6,6 +6,7 @@ data:
   appsettings.Production.json: |
     {
       "appConfiguration": {
-        "RabbitConnectionString": "host=rabbitmq:5672;virtualHost=/;username=user;password=qwerty"
+        "RabbitConnectionString": "host=rabbitmq:5672;virtualHost=/;username=user;password=qwerty",
+        "KafkaBootstrapServers": "kafka-headless:9092"
       }
     }
