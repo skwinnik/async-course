@@ -2,3 +2,6 @@ primary:
   persistence:
     enabled: true
     storageClass: nfs-client
+
+auth:
+  postgresPassword: qwerty

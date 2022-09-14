@@ -7,6 +7,7 @@ data:
     {
       "appConfiguration": {
         "RabbitConnectionString": "host=rabbitmq:5672;virtualHost=/;username=user;password=qwerty",
-        "KafkaBootstrapServers": "kafka-headless:9092"
+        "KafkaBootstrapServers": "kafka-headless:9092",
+        "SqlConnectionString": "Host=postgresql-hl;Port=5432;Database=servicetemplate;Username=postgres;Password=qwerty"
       }
     }

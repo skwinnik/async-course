@@ -1,7 +1,9 @@
 using System.Net;
 using Confluent.Kafka;
 using EasyNetQ;
+using Microsoft.EntityFrameworkCore;
 using ServiceTemplate.BackgroundServices;
+using ServiceTemplate.Db;
 
 namespace ServiceTemplate {
   public class Startup {
@@ -27,6 +29,10 @@ namespace ServiceTemplate {
 
       services.AddHostedService<RabbitSubscriptionBackgroundService>();
       services.AddHostedService<KafkaSubscriptionBackgroundService>();
+
+      services.AddDbContextFactory<ServiceDbContext>(o => 
+        o.UseNpgsql(this.Configuration.SqlConnectionString, 
+          x => x.UseAdminDatabase("postgres")));
 
       ConfigureKafkaServices(services);
     }
