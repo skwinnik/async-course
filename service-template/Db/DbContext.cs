@@ -6,6 +6,6 @@ namespace ServiceTemplate.Db {
     public ServiceDbContext(DbContextOptions<ServiceDbContext> options) : base(options) {
         this.Database.EnsureCreated();
     }
-    public DbSet<Message> Messages { get; set; }
+    public DbSet<Message> Messages => Set<Message>();
   }
 }
