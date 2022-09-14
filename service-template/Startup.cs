@@ -1,3 +1,5 @@
+using System.Net;
+using Confluent.Kafka;
 using EasyNetQ;
 using ServiceTemplate.BackgroundServices;
 
@@ -21,9 +23,29 @@ namespace ServiceTemplate {
       services.AddEndpointsApiExplorer();
       services.AddSwaggerGen();
 
-      services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString, r => r.EnableConsoleLogger()));
+      services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
 
-      services.AddHostedService<SubscriptionBackgroundService>();
+      services.AddHostedService<RabbitSubscriptionBackgroundService>();
+      services.AddHostedService<KafkaSubscriptionBackgroundService>();
+
+      ConfigureKafkaServices(services);
+    }
+
+    private void ConfigureKafkaServices(IServiceCollection services) {
+      var producerConfig = new ProducerConfig {
+        BootstrapServers = this.Configuration.KafkaBootstrapServers,
+        ClientId = Dns.GetHostName()
+      };
+
+      var consumerConfig = new ConsumerConfig {
+        BootstrapServers = this.Configuration.KafkaBootstrapServers,
+        ClientId = Dns.GetHostName(),
+        GroupId = "service-template",
+        AutoOffsetReset = AutoOffsetReset.Earliest
+      };
+      
+      services.AddSingleton(new ProducerBuilder<Null, string>(producerConfig).Build());
+      services.AddSingleton(new ConsumerBuilder<Null, string>(consumerConfig).Build());
     }
   }
 }

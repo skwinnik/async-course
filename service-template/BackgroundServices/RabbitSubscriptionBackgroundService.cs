@@ -1,9 +1,9 @@
 using ServiceTemplate.Messages;
 
 namespace ServiceTemplate.BackgroundServices {
-  public class SubscriptionBackgroundService : BackgroundService {
+  public class RabbitSubscriptionBackgroundService : BackgroundService {
     private readonly EasyNetQ.IBus bus;
-    public SubscriptionBackgroundService(EasyNetQ.IBus bus) {
+    public RabbitSubscriptionBackgroundService(EasyNetQ.IBus bus) {
       this.bus = bus;
     }
 
