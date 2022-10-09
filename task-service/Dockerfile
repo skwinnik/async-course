@@ -3,7 +3,7 @@ WORKDIR /app
 
 # Copy everything
 COPY ./task-service ./task-service
-COPY ./cud-common ./cud-common
+COPY ./common ./common
 COPY ./auth-common ./auth-common
 # Restore as distinct layers
 RUN dotnet restore ./task-service/task-service.csproj

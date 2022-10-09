@@ -7,5 +7,6 @@ namespace TaskService.Db {
       this.Database.EnsureCreated();
     }
     public DbSet<User> Users => Set<User>();
+    public DbSet<Task> Tasks => Set<Task>();
   }
 }

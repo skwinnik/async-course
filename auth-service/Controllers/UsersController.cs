@@ -41,8 +41,8 @@ namespace AuthService.Controllers {
       var addedUser = await this.dbContext.Users.AddAsync(new Db.Models.User() { Name = user.Username, Password = user.Password, Role = role });
       await this.dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<CudCommon.UserCreated>(new CudCommon.UserCreated {
-        User = new CudCommon.User {
+      this.rabbitBus.PubSub.Publish<Common.CudEvents.UserCreated>(new Common.CudEvents.UserCreated {
+        User = new Common.User {
           UserId = addedUser.Entity.Id,
           UserName = addedUser.Entity.Name,
           RoleName = role.Name
@@ -79,8 +79,8 @@ namespace AuthService.Controllers {
 
       await dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<CudCommon.UserChanged>(new CudCommon.UserChanged {
-        User = new CudCommon.User {
+      this.rabbitBus.PubSub.Publish<Common.CudEvents.UserChanged>(new Common.CudEvents.UserChanged {
+        User = new Common.User {
           UserId = user.Id,
           UserName = user.Name,
           RoleName = user.Role.Name

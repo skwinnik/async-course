@@ -1,7 +1,7 @@
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Db;
-using AuthService.Code.Auth;
+using AuthCommon;
 
 namespace AuthService {
   public class Startup {

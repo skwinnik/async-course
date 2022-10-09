@@ -1,7 +1,6 @@
-using AuthCommon;
-using AuthService.Models.Auth;
+using Microsoft.AspNetCore.Http;
 
-namespace AuthService.Code.Auth {
+namespace AuthCommon {
   public class AuthContext {
     private readonly IHttpContextAccessor httpContextAccessor;
 

@@ -1,20 +1,81 @@
 using AuthCommon;
-using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.AspNetCore.Mvc;
-using TaskService.Messages;
+using TaskService.BL.Tasks;
+using TaskService.Db;
 
 namespace TaskService.Controllers {
   [ApiController]
   [Route("[controller]/[action]")]
   public class TaskController : ControllerBase {
+    private readonly ServiceDbContext dbContext;
+    private readonly TaskAssignManager taskAssignManager;
+    private readonly IBus rabbitBus;
+    private readonly UserContext userContext;
 
-    public TaskController() {
+    public TaskController(ServiceDbContext dbContext,
+      TaskAssignManager taskAssignManager,
+      IBus rabbitBus, UserContext
+      userContext) {
+      this.dbContext = dbContext;
+      this.taskAssignManager = taskAssignManager;
+      this.rabbitBus = rabbitBus;
+      this.userContext = userContext;
     }
 
     [HttpPost]
     [Authorize("admin", "manager")]
     public async Task<ActionResult> Create([FromBody] string description) {
+      var task = await this.dbContext.Tasks.AddAsync(new Db.Models.Task {
+        Description = description,
+        UserId = await this.taskAssignManager.GetUserToAssign()
+      });
+      await this.dbContext.SaveChangesAsync();
+
+      this.rabbitBus.PubSub.Publish<Common.CudEvents.TaskCreated>(new Common.CudEvents.TaskCreated {
+        Task = new Common.Task {
+          TaskId = task.Entity.Id,
+          TaskDescription = task.Entity.Description,
+          TaskStatus = task.Entity.Status,
+          UserId = task.Entity.UserId
+        }
+      });
+
+      this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskAssigned>(new Common.BusinessEvents.TaskAssigned {
+        Task = new Common.Task {
+          TaskId = task.Entity.Id,
+          TaskDescription = task.Entity.Description,
+          TaskStatus = task.Entity.Status,
+          UserId = task.Entity.UserId
+        }
+      });
+
+      return this.Ok();
+    }
+
+    [HttpPost]
+    [Authorize("user")]
+    public async Task<ActionResult> Complete([FromBody] Guid taskId) {
+      var task = await this.dbContext.Tasks.FindAsync(taskId);
+
+      if (task == null)
+        return this.BadRequest();
+
+      if (task.UserId != this.userContext.GetCurrentUserId())
+        return this.Unauthorized();
+
+      task.Status = Common.TaskStatus.Completed;
+      await this.dbContext.SaveChangesAsync();
+
+      this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskCompleted>(new Common.BusinessEvents.TaskCompleted {
+        Task = new Common.Task {
+          TaskId = task.Id,
+          TaskDescription = task.Description,
+          TaskStatus = task.Status,
+          UserId = task.UserId
+        }
+      });
+
       return this.Ok();
     }
   }

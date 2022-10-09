@@ -1,8 +1,10 @@
 using System.Net;
+using AuthCommon;
 using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using TaskService.BackgroundServices;
+using TaskService.BL.Tasks;
 using TaskService.Db;
 
 namespace TaskService {
@@ -30,8 +32,13 @@ namespace TaskService {
       services.AddHostedService<UserCreatedConsumerBackgroundService>();
       services.AddHostedService<UserChangedConsumerBackgroundService>();
 
-      services.AddDbContextFactory<ServiceDbContext>(o => 
-        o.UseNpgsql(this.Configuration.SqlConnectionString, 
+      services.AddSingleton<TaskAssignManager>();
+
+      services.AddScoped<AuthContext>();
+      services.AddScoped<UserContext>();
+
+      services.AddDbContextFactory<ServiceDbContext>(o =>
+        o.UseNpgsql(this.Configuration.SqlConnectionString,
           x => x.UseAdminDatabase("postgres")));
 
     }

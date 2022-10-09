@@ -3,7 +3,7 @@ WORKDIR /app
 
 # Copy everything
 COPY ./auth-service ./auth-service
-COPY ./cud-common ./cud-common
+COPY ./common ./common
 COPY ./auth-common ./auth-common
 # Restore as distinct layers
 RUN dotnet restore ./auth-service/auth-service.csproj

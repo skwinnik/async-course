@@ -15,7 +15,7 @@ namespace TaskService.BackgroundServices {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
-        await bus.PubSub.SubscribeAsync<CudCommon.UserCreated>("task-service",
+        await bus.PubSub.SubscribeAsync<Common.CudEvents.UserCreated>("task-service",
           (msg, tkn) => Task.Factory.StartNew(async () => {
             await dbContext.Users.AddAsync(new Db.Models.User { UserId = msg.User.UserId, UserName = msg.User.UserName, RoleName = msg.User.RoleName });
             await dbContext.SaveChangesAsync(stoppingToken);
