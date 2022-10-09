@@ -1,6 +1,7 @@
 using AuthCommon;
 using EasyNetQ;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using TaskService.BL.Tasks;
 using TaskService.Db;
 
@@ -49,6 +50,30 @@ namespace TaskService.Controllers {
           UserId = task.Entity.UserId
         }
       });
+
+      return this.Ok();
+    }
+
+    [HttpPost]
+    [Authorize("admin", "manager")]
+    public async Task<ActionResult> Shuffle() {
+      var tasks = await this.dbContext.Tasks.Where(t => t.Status == Common.TaskStatus.Pending).ToListAsync();
+      for (var i = 0; i < tasks.Count; i++) {
+        tasks[i].UserId = await this.taskAssignManager.GetUserToAssign();
+      }
+
+      await this.dbContext.SaveChangesAsync();
+
+      for (var i = 0; i < tasks.Count; i++) {
+        this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskAssigned>(new Common.BusinessEvents.TaskAssigned {
+          Task = new Common.Task {
+            TaskId = tasks[i].Id,
+            TaskDescription = tasks[i].Description,
+            TaskStatus = tasks[i].Status,
+            UserId = tasks[i].UserId
+          }
+        });
+      }
 
       return this.Ok();
     }
