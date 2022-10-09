@@ -34,6 +34,7 @@ namespace TaskService {
 
       services.AddSingleton<TaskAssignManager>();
 
+      services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
       services.AddScoped<UserContext>();
 

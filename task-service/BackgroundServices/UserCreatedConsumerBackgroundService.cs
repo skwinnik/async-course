@@ -1,7 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TaskService.Db;
-using TaskService.Messages;
-
 namespace TaskService.BackgroundServices {
   public class UserCreatedConsumerBackgroundService : BackgroundService {
     private readonly EasyNetQ.IBus bus;

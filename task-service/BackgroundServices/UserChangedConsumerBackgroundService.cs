@@ -1,6 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using TaskService.Db;
-using TaskService.Messages;
 
 namespace TaskService.BackgroundServices {
   public class UserChangedConsumerBackgroundService : BackgroundService {

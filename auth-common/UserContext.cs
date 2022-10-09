@@ -1,5 +1,3 @@
-using AuthCommon;
-
 namespace AuthCommon {
   public class UserContext {
     private readonly AuthContext authContext;
