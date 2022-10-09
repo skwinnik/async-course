@@ -3,6 +3,7 @@ using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Db;
+using AuthService.Code.Auth;
 
 namespace AuthService {
   public class Startup {
@@ -29,6 +30,10 @@ namespace AuthService {
       services.AddDbContextFactory<ServiceDbContext>(o => 
         o.UseNpgsql(this.Configuration.SqlConnectionString, 
           x => x.UseAdminDatabase("postgres")));
+
+      services.AddHttpContextAccessor();
+      services.AddScoped<AuthContext>();
+      services.AddScoped<UserContext>();
     }
 
     private void ConfigureKafkaServices(IServiceCollection services) {

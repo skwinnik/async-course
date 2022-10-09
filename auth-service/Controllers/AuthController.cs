@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Auth;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using AuthService.Code.Auth;
 
 namespace AuthService.Controllers {
   [ApiController]
@@ -24,11 +25,7 @@ namespace AuthService.Controllers {
         return this.Unauthorized();
 
       return this.Ok(new AuthResponse {
-        //yes it is secure trust me
-        Token = System.Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(JsonSerializer.Serialize<JwtToken>(new JwtToken {
-          Id = user.Id,
-          Role = user.Role.Name
-        })))
+        Token = new JwtToken { Id = user.Id, Role = user.Role.Name }.EncodeJwt()
       });
     }
   }
