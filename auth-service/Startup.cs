@@ -1,5 +1,3 @@
-using System.Net;
-using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Db;
@@ -34,23 +32,6 @@ namespace AuthService {
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
       services.AddScoped<UserContext>();
-    }
-
-    private void ConfigureKafkaServices(IServiceCollection services) {
-      var producerConfig = new ProducerConfig {
-        BootstrapServers = this.Configuration.KafkaBootstrapServers,
-        ClientId = Dns.GetHostName()
-      };
-
-      var consumerConfig = new ConsumerConfig {
-        BootstrapServers = this.Configuration.KafkaBootstrapServers,
-        ClientId = Dns.GetHostName(),
-        GroupId = "auth-service",
-        AutoOffsetReset = AutoOffsetReset.Earliest
-      };
-      
-      services.AddSingleton(new ProducerBuilder<Null, string>(producerConfig).Build());
-      services.AddSingleton(new ConsumerBuilder<Null, string>(consumerConfig).Build());
     }
   }
 }

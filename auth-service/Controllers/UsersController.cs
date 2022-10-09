@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Users;
 using AuthService.Code.Auth;
 using AuthCommon;
+using EasyNetQ;
 
 namespace AuthService.Controllers {
   [ApiController]
@@ -11,11 +12,12 @@ namespace AuthService.Controllers {
   public class UsersController : ControllerBase {
     private readonly ServiceDbContext dbContext;
     private readonly UserContext userContext;
+    private readonly IBus rabbitBus;
 
-    public UsersController(ServiceDbContext dbContext, UserContext userContext) {
+    public UsersController(ServiceDbContext dbContext, UserContext userContext, IBus rabbitBus) {
       this.dbContext = dbContext;
       this.userContext = userContext;
-
+      this.rabbitBus = rabbitBus;
     }
 
     [HttpGet]
@@ -36,8 +38,17 @@ namespace AuthService.Controllers {
       if (role == null)
         return this.BadRequest();
 
-      await this.dbContext.Users.AddAsync(new Db.Models.User() { Name = user.Username, Password = user.Password, Role = role });
+      var addedUser = await this.dbContext.Users.AddAsync(new Db.Models.User() { Name = user.Username, Password = user.Password, Role = role });
       await this.dbContext.SaveChangesAsync();
+
+      this.rabbitBus.PubSub.Publish<CudCommon.UserCreated>(new CudCommon.UserCreated {
+        User = new CudCommon.User {
+          UserId = addedUser.Entity.Id,
+          UserName = addedUser.Entity.Name,
+          RoleName = role.Name
+        }
+      });
+
       return this.Ok();
     }
 
@@ -50,22 +61,31 @@ namespace AuthService.Controllers {
       if (userRequest.Id == null || userRequest.Id != currentUserId)
         return this.BadRequest();
 
-      var user = await this.dbContext.Users.SingleOrDefaultAsync(u => u.Id == userRequest.Id);
+      var user = await this.dbContext.Users.Include(u => u.Role).SingleOrDefaultAsync(u => u.Id == userRequest.Id);
       if (user == null)
         return this.BadRequest();
 
       if (userRequest.UserName != null)
         user.Name = userRequest.UserName;
-      
+
       if (userRequest.RoleId != null) {
         var role = await this.dbContext.Roles.SingleOrDefaultAsync(r => r.Id == userRequest.RoleId);
         if (role == null)
           return this.BadRequest();
-        
+
         user.RoleId = (Guid)userRequest.RoleId;
+        user.Role = role;
       }
 
       await dbContext.SaveChangesAsync();
+
+      this.rabbitBus.PubSub.Publish<CudCommon.UserChanged>(new CudCommon.UserChanged {
+        User = new CudCommon.User {
+          UserId = user.Id,
+          UserName = user.Name,
+          RoleName = user.Role.Name
+        }
+      });
 
       return this.Ok();
     }

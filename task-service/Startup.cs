@@ -27,31 +27,13 @@ namespace TaskService {
 
       services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
 
-      services.AddHostedService<RabbitSubscriptionBackgroundService>();
-      services.AddHostedService<KafkaSubscriptionBackgroundService>();
+      services.AddHostedService<UserCreatedConsumerBackgroundService>();
+      services.AddHostedService<UserChangedConsumerBackgroundService>();
 
       services.AddDbContextFactory<ServiceDbContext>(o => 
         o.UseNpgsql(this.Configuration.SqlConnectionString, 
           x => x.UseAdminDatabase("postgres")));
 
-      ConfigureKafkaServices(services);
-    }
-
-    private void ConfigureKafkaServices(IServiceCollection services) {
-      var producerConfig = new ProducerConfig {
-        BootstrapServers = this.Configuration.KafkaBootstrapServers,
-        ClientId = Dns.GetHostName()
-      };
-
-      var consumerConfig = new ConsumerConfig {
-        BootstrapServers = this.Configuration.KafkaBootstrapServers,
-        ClientId = Dns.GetHostName(),
-        GroupId = "task-service",
-        AutoOffsetReset = AutoOffsetReset.Earliest
-      };
-      
-      services.AddSingleton(new ProducerBuilder<Null, string>(producerConfig).Build());
-      services.AddSingleton(new ConsumerBuilder<Null, string>(consumerConfig).Build());
     }
   }
 }

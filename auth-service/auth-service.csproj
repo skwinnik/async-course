@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../auth-common/auth-common.csproj" />
+    <ProjectReference Include="../cud-common/cud-common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
