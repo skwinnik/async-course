@@ -24,6 +24,19 @@ namespace TaskService.Controllers {
       this.userContext = userContext;
     }
 
+    [HttpGet]
+    [Authorize("user")]
+    public async Task<ActionResult> GetCurrentUserTasks() {
+      var id = this.userContext.GetCurrentUserId();
+      return this.Ok(await this.dbContext.Tasks.Where(t => t.UserId == id).ToListAsync());
+    }
+
+    [HttpGet]
+    [Authorize("admin", "manager")]
+    public async Task<ActionResult> GetAllTasks() {
+      return this.Ok(await this.dbContext.Tasks.ToListAsync());
+    }
+
     [HttpPost]
     [Authorize("admin", "manager")]
     public async Task<ActionResult> Create([FromBody] string description) {
