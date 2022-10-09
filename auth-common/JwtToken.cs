@@ -1,4 +1,4 @@
-namespace AuthService.Models.Auth {
+namespace AuthCommon {
   public class JwtToken {
     public Guid Id { get; set; } = Guid.Empty;
     public string Role { get; set; } = "";

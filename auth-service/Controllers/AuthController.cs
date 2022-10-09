@@ -2,9 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AuthService.Db;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Auth;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using AuthService.Code.Auth;
+using AuthCommon;
 
 namespace AuthService.Controllers {
   [ApiController]

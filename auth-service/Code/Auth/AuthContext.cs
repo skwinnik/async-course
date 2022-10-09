@@ -1,3 +1,4 @@
+using AuthCommon;
 using AuthService.Models.Auth;
 
 namespace AuthService.Code.Auth {

@@ -56,7 +56,7 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /app/appsettings.Production.json
+            - mountPath: /app/auth-service/appsettings.Production.json
               name: appsettings
               subPath: appsettings.Production.json
       volumes:

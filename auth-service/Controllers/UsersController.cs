@@ -3,6 +3,7 @@ using AuthService.Db;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Users;
 using AuthService.Code.Auth;
+using AuthCommon;
 
 namespace AuthService.Controllers {
   [ApiController]

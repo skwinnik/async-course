@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace AuthService.Code.Auth {
+namespace AuthCommon {
   public class AuthorizeAttribute : TypeFilterAttribute {
     public AuthorizeAttribute(params string[] roles) : base(typeof(AuthorizeActionFilter)) {
       this.Arguments = new object[] {
