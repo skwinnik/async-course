@@ -1,4 +1,4 @@
-namespace AuthCommon {
+namespace Common.Auth {
   public class UserContext {
     private readonly AuthContext authContext;
 

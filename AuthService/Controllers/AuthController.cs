@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AuthService.Db;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Auth;
-using AuthCommon;
+using Common.Auth;
 
 namespace AuthService.Controllers {
   [ApiController]

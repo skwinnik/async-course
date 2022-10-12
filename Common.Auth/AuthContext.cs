@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Http;
 
-namespace AuthCommon {
+namespace Common.Auth {
   public class AuthContext {
     private readonly IHttpContextAccessor httpContextAccessor;
 

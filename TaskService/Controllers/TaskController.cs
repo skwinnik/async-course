@@ -1,4 +1,4 @@
-using AuthCommon;
+using Common.Auth;
 using EasyNetQ;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

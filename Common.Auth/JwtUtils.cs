@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace AuthCommon {
+namespace Common.Auth {
   public static class JwtTokenExtensions {
     public static string EncodeJwt(this JwtToken token) {
       //yes it is secure trust me

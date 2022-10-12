@@ -1,13 +1,9 @@
-using System.Net;
-using AuthCommon;
-using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
-using TaskService.BackgroundServices;
-using TaskService.BL.Tasks;
-using TaskService.Db;
+using AuthService.Db;
+using Common.Auth;
 
-namespace TaskService {
+namespace AuthService {
   public class Startup {
     public AppConfiguration Configuration { get; set; }
     public Startup(IConfiguration configuration) {
@@ -29,19 +25,13 @@ namespace TaskService {
 
       services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
 
-      services.AddHostedService<UserCreatedConsumerBackgroundService>();
-      services.AddHostedService<UserChangedConsumerBackgroundService>();
-
-      services.AddSingleton<TaskAssignManager>();
+      services.AddDbContextFactory<ServiceDbContext>(o => 
+        o.UseNpgsql(this.Configuration.SqlConnectionString, 
+          x => x.UseAdminDatabase("postgres")));
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
       services.AddScoped<UserContext>();
-
-      services.AddDbContextFactory<ServiceDbContext>(o =>
-        o.UseNpgsql(this.Configuration.SqlConnectionString,
-          x => x.UseAdminDatabase("postgres")));
-
     }
   }
 }

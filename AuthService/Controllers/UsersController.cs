@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AuthService.Db;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Users;
-using AuthCommon;
+using Common.Auth;
 using EasyNetQ;
 
 namespace AuthService.Controllers {

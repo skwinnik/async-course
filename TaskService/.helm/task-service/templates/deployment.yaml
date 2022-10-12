@@ -1,16 +1,16 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "auth-service.fullname" . }}
+  name: {{ include "task-service.fullname" . }}
   labels:
-    {{- include "auth-service.labels" . | nindent 4 }}
+    {{- include "task-service.labels" . | nindent 4 }}
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   selector:
     matchLabels:
-      {{- include "auth-service.selectorLabels" . | nindent 6 }}
+      {{- include "task-service.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -18,13 +18,13 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "auth-service.selectorLabels" . | nindent 8 }}
+        {{- include "task-service.selectorLabels" . | nindent 8 }}
     spec:
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "auth-service.serviceAccountName" . }}
+      serviceAccountName: {{ include "task-service.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -56,13 +56,13 @@ spec:
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
-            - mountPath: /app/auth-service/appsettings.Production.json
+            - mountPath: /app/TaskService/appsettings.Production.json
               name: appsettings
               subPath: appsettings.Production.json
       volumes:
         - name: appsettings
           configMap:
-            name: auth-service-configmap
+            name: task-service-configmap
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
