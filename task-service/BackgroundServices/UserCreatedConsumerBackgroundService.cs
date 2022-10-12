@@ -1,13 +1,11 @@
 using Microsoft.EntityFrameworkCore;
-using AuthService.Db;
-using AuthService.Messages;
-
-namespace AuthService.BackgroundServices {
-  public class RabbitSubscriptionBackgroundService : BackgroundService {
+using TaskService.Db;
+namespace TaskService.BackgroundServices {
+  public class UserCreatedConsumerBackgroundService : BackgroundService {
     private readonly EasyNetQ.IBus bus;
     private readonly IDbContextFactory<ServiceDbContext> dbContextFactory;
 
-    public RabbitSubscriptionBackgroundService(EasyNetQ.IBus bus, IDbContextFactory<ServiceDbContext> dbContextFactory) {
+    public UserCreatedConsumerBackgroundService(EasyNetQ.IBus bus, IDbContextFactory<ServiceDbContext> dbContextFactory) {
       this.bus = bus;
       this.dbContextFactory = dbContextFactory;
     }
@@ -15,10 +13,9 @@ namespace AuthService.BackgroundServices {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
-        await bus.PubSub.SubscribeAsync<TestMessage>("sub",
+        await bus.PubSub.SubscribeAsync<Common.CudEvents.UserCreated>("task-service",
           (msg, tkn) => Task.Factory.StartNew(async () => {
-            Console.WriteLine(msg.Body);
-            await dbContext.Messages.AddAsync(new Db.Models.Message { Body = msg.Body, Source = "Rabbit" });
+            await dbContext.Users.AddAsync(new Db.Models.User { UserId = msg.User.UserId, UserName = msg.User.UserName, RoleName = msg.User.RoleName });
             await dbContext.SaveChangesAsync(stoppingToken);
           }),
           c => c.WithAutoDelete(),

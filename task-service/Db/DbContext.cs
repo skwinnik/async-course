@@ -4,8 +4,9 @@ namespace TaskService.Db {
 
   public class ServiceDbContext : Microsoft.EntityFrameworkCore.DbContext {
     public ServiceDbContext(DbContextOptions<ServiceDbContext> options) : base(options) {
-        this.Database.EnsureCreated();
+      this.Database.EnsureCreated();
     }
-    public DbSet<Message> Messages => Set<Message>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Task> Tasks => Set<Task>();
   }
 }
