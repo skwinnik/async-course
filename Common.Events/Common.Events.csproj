@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Common.Events</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="../Common.Events.Schemas/**/*.json" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always">
+    </Content>
+  </ItemGroup>
+</Project>

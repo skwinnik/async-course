@@ -1,0 +1,31 @@
+{
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "eventName": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "eventVersion": {
+      "type": "integer"
+    },
+    "userId": {
+      "type": "string"
+    },
+    "taskId": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "eventId",
+    "eventName",
+    "eventDescription",
+    "eventVersion",
+    "userId",
+    "taskId"
+  ]
+}

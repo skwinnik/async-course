@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Common/Common.csproj" />
+    <ProjectReference Include="../Common.Events/Common.Events.csproj" />
     <ProjectReference Include="../Common.Auth/Common.Auth.csproj" />
   </ItemGroup>
 

@@ -3,7 +3,8 @@ WORKDIR /app
 
 # Copy everything
 COPY ./AuthService ./AuthService
-COPY ./Common ./Common
+COPY ./Common.Events ./Common.Events
+COPY ./Common.Events.Schemas ./Common.Events.Schemas
 COPY ./Common.Auth ./Common.Auth
 # Restore as distinct layers
 RUN dotnet restore ./AuthService/AuthService.csproj

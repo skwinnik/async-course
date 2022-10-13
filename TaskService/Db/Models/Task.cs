@@ -9,4 +9,8 @@ namespace TaskService.Db.Models {
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid UserId { get; set; } = Guid.Empty;
   }
+
+  public enum TaskStatus {
+    Pending = 0, Completed = 1
+  }
 }
