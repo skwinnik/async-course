@@ -15,6 +15,12 @@
         "description": {
           "type": "string"
         },
+        "fee": {
+          "type": "number"
+        },
+        "reward": {
+          "type": "number"
+        },
         "status": {
           "type": "integer",
           "enum": [
@@ -29,6 +35,8 @@
       "required": [
         "id",
         "description",
+        "fee",
+        "reward",
         "status",
         "userId"
       ]

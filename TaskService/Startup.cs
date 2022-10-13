@@ -34,6 +34,7 @@ namespace TaskService {
       services.AddHostedService<ConsumerBackgroundService>();
 
       services.AddSingleton<TaskAssignManager>();
+      services.AddSingleton<TaskPriceManager>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();

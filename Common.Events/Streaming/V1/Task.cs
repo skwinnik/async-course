@@ -17,6 +17,12 @@ namespace Common.Events.Streaming.V1 {
       [JsonProperty("description", Required = Required.Always)]
       public string Description { get; set; } = "";
 
+      [JsonProperty("fee", Required = Required.Always)]
+      public decimal Fee { get; set; }
+      
+      [JsonProperty("reward", Required = Required.Always)]
+      public decimal Reward { get; set; }
+
       [JsonProperty("status", Required = Required.Always)]
       public TaskStatus Status { get; set; } = TaskStatus.Pending;
 

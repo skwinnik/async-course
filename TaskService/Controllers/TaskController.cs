@@ -14,15 +14,18 @@ namespace TaskService.Controllers {
   public class TaskController : ControllerBase {
     private readonly ServiceDbContext dbContext;
     private readonly TaskAssignManager taskAssignManager;
+    private readonly TaskPriceManager taskPriceManager;
     private readonly RabbitContainer rabbitContainer;
     private readonly UserContext userContext;
 
     public TaskController(ServiceDbContext dbContext,
       TaskAssignManager taskAssignManager,
+      TaskPriceManager taskPriceManager,
       RabbitContainer rabbitContainer, UserContext
       userContext) {
       this.dbContext = dbContext;
       this.taskAssignManager = taskAssignManager;
+      this.taskPriceManager = taskPriceManager;
       this.rabbitContainer = rabbitContainer;
       this.userContext = userContext;
     }
@@ -48,17 +51,22 @@ namespace TaskService.Controllers {
       var task = await this.dbContext.Tasks.AddAsync(new Db.Models.Task {
         Description = match.Groups["description"].Value,
         TicketId = match.Groups["ticketId"]?.Value,
-        UserId = await this.taskAssignManager.GetUserToAssign()
+        UserId = await this.taskAssignManager.GetUserToAssign(),
+        Fee = await this.taskPriceManager.GetFee(),
+        Reward = await this.taskPriceManager.GetReward(),
       });
-      await this.dbContext.SaveChangesAsync();
 
+      await this.dbContext.SaveChangesAsync();
 
       if (SchemaRegistry.Streaming_V1_Task.TrySerializeValidated(new Common.Events.Streaming.V1.TaskEvent {
         Payload = new Common.Events.Streaming.V1.TaskEvent.Task {
           Id = task.Entity.Id,
           Description = task.Entity.Description,
           Status = (Common.Events.Streaming.V1.TaskStatus)task.Entity.Status,
-          UserId = task.Entity.UserId
+          UserId = task.Entity.UserId,
+          Fee = task.Entity.Fee,
+          Reward = task.Entity.Reward,
+          TicketId = task.Entity.TicketId
         }
       }, out var jsonTask)) {
         await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.streaming", false, new Message<string>(jsonTask));

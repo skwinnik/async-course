@@ -1,6 +1,5 @@
 namespace AccountingService.Db.Models {
   using System.ComponentModel.DataAnnotations.Schema;
-  using Common;
   public class Task {
     
     [DatabaseGenerated(DatabaseGeneratedOption.None)]

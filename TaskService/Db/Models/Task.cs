@@ -6,7 +6,9 @@ namespace TaskService.Db.Models {
     public string? TicketId { get; set; }
     public string Description { get; set; } = "";
     public TaskStatus Status { get; set; } = TaskStatus.Pending;
-    
+    public decimal Fee { get; set; }
+    public decimal Reward { get; set; }
+
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid UserId { get; set; } = Guid.Empty;
   }
