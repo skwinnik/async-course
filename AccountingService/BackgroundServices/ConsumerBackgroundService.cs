@@ -72,17 +72,23 @@ namespace AccountingService.BackgroundServices {
 
         var task = await dbContext.Tasks.FindAsync(result.Payload.Id);
         if (task == null)
-          await dbContext.Tasks.AddAsync(new Db.Models.Task { Id = result.Payload.Id, 
-            Description = result.Payload.Description, 
-            Status = result.Payload.Status, 
-            TicketId = result.Payload.TicketId, 
-            UserId = result.Payload.UserId });
+          await dbContext.Tasks.AddAsync(new Db.Models.Task {
+            Id = result.Payload.Id,
+            Description = result.Payload.Description,
+            Status = result.Payload.Status,
+            TicketId = result.Payload.TicketId,
+            UserId = result.Payload.UserId,
+            Fee = result.Payload.Fee,
+            Reward = result.Payload.Reward
+          });
 
         if (task != null) {
           task.Description = result.Payload.Description;
           task.Status = result.Payload.Status;
           task.TicketId = result.Payload.TicketId;
           task.UserId = result.Payload.UserId;
+          task.Fee = result.Payload.Fee;
+          task.Reward = result.Payload.Reward;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
