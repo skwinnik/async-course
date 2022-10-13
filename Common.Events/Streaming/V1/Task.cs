@@ -11,6 +11,9 @@ namespace Common.Events.Streaming.V1 {
       [JsonProperty("id", Required = Required.Always)]
       public Guid Id { get; set; }
 
+      [JsonProperty("ticketId", Required = Required.Default)]
+      public string? TicketId { get; set; } = null;
+
       [JsonProperty("description", Required = Required.Always)]
       public string Description { get; set; } = "";
 

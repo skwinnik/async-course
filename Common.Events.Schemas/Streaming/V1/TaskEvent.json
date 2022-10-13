@@ -6,6 +6,12 @@
         "id": {
           "type": "string"
         },
+        "ticketId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "description": {
           "type": "string"
         },

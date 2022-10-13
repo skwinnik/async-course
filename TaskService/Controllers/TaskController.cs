@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Common.Auth;
 using Common.Events;
 using EasyNetQ;
@@ -42,8 +43,11 @@ namespace TaskService.Controllers {
     [HttpPost]
     [Authorize("admin", "manager")]
     public async Task<ActionResult> Create([FromBody] string description) {
+      var regex = new Regex(@"(\[(?<ticketId>.*)\])?\s?(?<description>.*)");
+      var match = regex.Match(description);
       var task = await this.dbContext.Tasks.AddAsync(new Db.Models.Task {
-        Description = description,
+        Description = match.Groups["description"].Value,
+        TicketId = match.Groups["ticketId"]?.Value,
         UserId = await this.taskAssignManager.GetUserToAssign()
       });
       await this.dbContext.SaveChangesAsync();
