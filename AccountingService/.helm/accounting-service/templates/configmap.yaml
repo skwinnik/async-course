@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: accounting-service-configmap
+data:
+  appsettings.Production.json: |
+    {
+      "appConfiguration": {
+        "RabbitConnectionString": "host=rabbitmq:5672;virtualHost=/;username=user;password=qwerty",
+        "KafkaBootstrapServers": "kafka-headless:9092",
+        "SqlConnectionString": "Host=postgresql-hl;Port=5432;Database=AccountingService;Username=postgres;Password=qwerty"
+      }
+    }

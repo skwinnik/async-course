@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "accounting-service.fullname" . }}-test-connection"
+  labels:
+    {{- include "accounting-service.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox
+      command: ['wget']
+      args: ['{{ include "accounting-service.fullname" . }}:{{ .Values.service.port }}/swagger/index.html']
+  restartPolicy: Never
