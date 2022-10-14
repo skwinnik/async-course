@@ -24,7 +24,8 @@ namespace Common.Events {
       try {
         result = new JsonSerializer().Deserialize<T>(reader)!;
       }
-      catch {
+      catch (Exception e) {
+        Console.WriteLine(e);
         result = null!;
         return false;
       }
