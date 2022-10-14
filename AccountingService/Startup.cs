@@ -31,7 +31,8 @@ namespace AccountingService {
       services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
       services.AddSingleton<RabbitContainer>();
 
-      services.AddHostedService<ConsumerBackgroundService>();
+      services.AddHostedService<UserConsumerBackgroundService>();
+      services.AddHostedService<TaskConsumerBackgroundService>();
 
       services.AddSingleton<TaskAssignManager>();
 
