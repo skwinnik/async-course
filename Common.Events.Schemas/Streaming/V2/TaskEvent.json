@@ -6,6 +6,9 @@
         "id": {
           "type": "string"
         },
+        "ticketId": {
+          "type": "string"
+        },
         "description": {
           "type": "string"
         },
@@ -28,6 +31,7 @@
       },
       "required": [
         "id",
+        "ticketId",
         "description",
         "fee",
         "reward",

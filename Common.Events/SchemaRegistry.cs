@@ -8,6 +8,7 @@ namespace Common.Events {
     public static Schema<Business.V1.TaskCompleted> Business_V1_TaskCompleted => new Schema<Business.V1.TaskCompleted>("./Business/V1/TaskCompleted.json");
     public static Schema<Streaming.V1.UserEvent> Streaming_V1_User => new Schema<Streaming.V1.UserEvent>("./Streaming/V1/UserEvent.json");
     public static Schema<Streaming.V1.TaskEvent> Streaming_V1_Task => new Schema<Streaming.V1.TaskEvent>("./Streaming/V1/TaskEvent.json");
+    public static Schema<Streaming.V2.TaskEvent> Streaming_V2_Task => new Schema<Streaming.V2.TaskEvent>("./Streaming/V2/TaskEvent.json");
   }
 
   public class Schema<T> where T : class {

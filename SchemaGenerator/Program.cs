@@ -10,11 +10,15 @@ internal class Program {
     foreach (var eventType in eventTypes) {
       var schema = gen.Generate(eventType);
       var eventNameType = "Business";
+      var eventVersion = "V1";
 
       if (!string.IsNullOrEmpty(eventType.Namespace) && eventType.Namespace.Contains("Streaming"))
         eventNameType = "Streaming";
 
-      File.WriteAllTextAsync($"../Common.Events.Schemas/{eventNameType}/V1/{eventType.Name}.json", schema.ToString());
+      if (!string.IsNullOrEmpty(eventType.Namespace) && eventType.Namespace.Contains("V2"))
+        eventVersion = "V2";
+
+      File.WriteAllTextAsync($"../Common.Events.Schemas/{eventNameType}/{eventVersion}/{eventType.Name}.json", schema.ToString());
     }
   }
 }

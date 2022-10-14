@@ -43,14 +43,17 @@ namespace TaskService.Controllers {
       return this.Ok(await this.dbContext.Tasks.ToListAsync());
     }
 
+    public class CreateTaskRequest {
+      public string TicketId { get; set; } = "";
+      public string Description { get; set; } = "";
+    }
+
     [HttpPost]
     [Authorize("admin", "manager")]
-    public async Task<ActionResult> Create([FromBody] string description) {
-      var regex = new Regex(@"(\[(?<ticketId>.*)\])?\s?(?<description>.*)");
-      var match = regex.Match(description);
+    public async Task<ActionResult> Create([FromBody] CreateTaskRequest request) {
       var task = await this.dbContext.Tasks.AddAsync(new Db.Models.Task {
-        Description = match.Groups["description"].Value,
-        TicketId = match.Groups["ticketId"]?.Value,
+        Description = request.Description,
+        TicketId = request.TicketId,
         UserId = await this.taskAssignManager.GetUserToAssign(),
         Fee = await this.taskPriceManager.GetFee(),
         Reward = await this.taskPriceManager.GetReward(),
@@ -58,18 +61,18 @@ namespace TaskService.Controllers {
 
       await this.dbContext.SaveChangesAsync();
 
-      if (SchemaRegistry.Streaming_V1_Task.TrySerializeValidated(new Common.Events.Streaming.V1.TaskEvent {
-        Payload = new Common.Events.Streaming.V1.TaskEvent.Task {
+      if (SchemaRegistry.Streaming_V2_Task.TrySerializeValidated(new Common.Events.Streaming.V2.TaskEvent {
+        Payload = new Common.Events.Streaming.V2.TaskEvent.Task {
           Id = task.Entity.Id,
           Description = task.Entity.Description,
-          Status = (Common.Events.Streaming.V1.TaskStatus)task.Entity.Status,
+          Status = (Common.Events.Streaming.V2.TaskStatus)task.Entity.Status,
           UserId = task.Entity.UserId,
           Fee = task.Entity.Fee,
           Reward = task.Entity.Reward,
           TicketId = task.Entity.TicketId
         }
       }, out var jsonTask)) {
-        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.streaming", false, new Message<string>(jsonTask));
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v2.streaming", false, new Message<string>(jsonTask));
       }
 
       if (SchemaRegistry.Business_V1_TaskAssigned.TrySerializeValidated(new Common.Events.Business.V1.TaskAssigned {

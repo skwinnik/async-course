@@ -1,6 +1,6 @@
 using Newtonsoft.Json;
 
-namespace Common.Events.Streaming.V1 {
+namespace Common.Events.Streaming.V2 {
 
   public enum TaskStatus {
     Pending = 0, Completed = 1
@@ -11,12 +11,15 @@ namespace Common.Events.Streaming.V1 {
       [JsonProperty("id", Required = Required.Always)]
       public Guid Id { get; set; }
 
+      [JsonProperty("ticketId", Required = Required.Always)]
+      public string TicketId { get; set; } = "";
+
       [JsonProperty("description", Required = Required.Always)]
       public string Description { get; set; } = "";
 
       [JsonProperty("fee", Required = Required.Always)]
       public decimal Fee { get; set; }
-      
+
       [JsonProperty("reward", Required = Required.Always)]
       public decimal Reward { get; set; }
 

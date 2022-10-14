@@ -1,4 +1,4 @@
-using Common.Events.Streaming.V1;
+using Common.Events.Streaming.V2;
 using EasyNetQ.Consumer;
 using Microsoft.EntityFrameworkCore;
 using AccountingService.Db;
@@ -18,12 +18,12 @@ namespace AccountingService.BackgroundServices {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
         var taskStreamingQueue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("accounting-service.task", c => c.AsAutoDelete(true).AsDurable(true));
-        await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.TaskExchange, taskStreamingQueue, "v1.streaming", new Dictionary<string, object>());
+        await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.TaskExchange, taskStreamingQueue, "v2.streaming", new Dictionary<string, object>());
 
         rabbitContainer.Bus.Advanced.Consume(c => {
           c
             .ForQueue(taskStreamingQueue, handlers =>
-              handlers.Add<string>(this.TaskStreamingV1Handler(dbContext)),
+              handlers.Add<string>(this.TaskStreamingV2Handler(dbContext)),
               config => config.WithConsumerTag("accounting-service"));
         });
 
@@ -34,9 +34,9 @@ namespace AccountingService.BackgroundServices {
       }
     }
 
-    private IMessageHandler<string> TaskStreamingV1Handler(ServiceDbContext dbContext) {
+    private IMessageHandler<string> TaskStreamingV2Handler(ServiceDbContext dbContext) {
       return async (message, info, cancellationToken) => {
-        if (!Common.Events.SchemaRegistry.Streaming_V1_Task.TryDeserializeValidated(message.Body, out TaskEvent result)) {
+        if (!Common.Events.SchemaRegistry.Streaming_V2_Task.TryDeserializeValidated(message.Body, out TaskEvent result)) {
           Console.WriteLine("Unable to parse Task streaming event");
           Console.WriteLine(message.Body);
           return AckStrategies.NackWithRequeue;

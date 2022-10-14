@@ -3,7 +3,7 @@ namespace TaskService.Db.Models {
   using Common;
   public class Task {
     public Guid Id { get; set; } = Guid.Empty;
-    public string? TicketId { get; set; }
+    public string TicketId { get; set; } = "";
     public string Description { get; set; } = "";
     public TaskStatus Status { get; set; } = TaskStatus.Pending;
     public decimal Fee { get; set; }
