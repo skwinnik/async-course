@@ -12,7 +12,7 @@ namespace AuthService.Rabbit {
         c
             .WithType(ExchangeType.Topic)
             .AsDurable(true)
-            .AsAutoDelete(true)
+            .AsAutoDelete(false)
       );
     }
   }

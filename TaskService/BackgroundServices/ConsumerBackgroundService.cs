@@ -17,7 +17,7 @@ namespace TaskService.BackgroundServices {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
-        var queue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("task-service.user", c => c.AsAutoDelete(true).AsDurable(true));
+        var queue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("task-service.user", c => c.AsAutoDelete(false).AsDurable(true));
         await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.UserExchange, queue, "v1.streaming", new Dictionary<string, object>());
 
         rabbitContainer.Bus.Advanced.Consume(c => {

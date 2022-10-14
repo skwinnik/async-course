@@ -17,7 +17,7 @@ namespace AccountingService.BackgroundServices {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
-        var userStreamingQueue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("accounting-service.user", c => c.AsAutoDelete(true).AsDurable(true));
+        var userStreamingQueue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("accounting-service.user", c => c.AsAutoDelete(false).AsDurable(true));
         await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.UserExchange, userStreamingQueue, "v1.streaming", new Dictionary<string, object>());
 
         rabbitContainer.Bus.Advanced.Consume(c => {
