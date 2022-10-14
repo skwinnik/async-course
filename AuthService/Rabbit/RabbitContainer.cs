@@ -10,7 +10,7 @@ namespace AuthService.Rabbit {
 
       this.UserExchange = bus.Advanced.ExchangeDeclare("User", c =>
         c
-            .WithType(ExchangeType.Fanout)
+            .WithType(ExchangeType.Topic)
             .AsDurable(true)
             .AsAutoDelete(true)
       );
