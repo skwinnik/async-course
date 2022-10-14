@@ -18,6 +18,9 @@ internal class Program {
       if (!string.IsNullOrEmpty(eventType.Namespace) && eventType.Namespace.Contains("V2"))
         eventVersion = "V2";
 
+      if (!string.IsNullOrEmpty(eventType.Namespace) && eventType.Namespace.Contains("V3"))
+        eventVersion = "V3";
+
       File.WriteAllTextAsync($"../Common.Events.Schemas/{eventNameType}/{eventVersion}/{eventType.Name}.json", schema.ToString());
     }
   }

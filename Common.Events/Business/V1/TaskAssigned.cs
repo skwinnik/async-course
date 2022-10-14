@@ -13,5 +13,7 @@ namespace Common.Events.Business.V1 {
     public Guid UserId { get; set; }
     [JsonProperty("taskId", Required = Required.Always)]
     public Guid TaskId { get; set; }
+    [JsonProperty("timeStamp", Required = Required.Always)]
+    public DateTime TimeStamp { get; set; } = DateTime.Now;
   }
 }

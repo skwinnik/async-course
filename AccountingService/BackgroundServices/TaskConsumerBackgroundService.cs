@@ -1,4 +1,4 @@
-using Common.Events.Streaming.V2;
+using Common.Events.Streaming.V3;
 using EasyNetQ.Consumer;
 using Microsoft.EntityFrameworkCore;
 using AccountingService.Db;
@@ -18,12 +18,12 @@ namespace AccountingService.BackgroundServices {
       try {
         var dbContext = await this.dbContextFactory.CreateDbContextAsync(stoppingToken);
         var taskStreamingQueue = await rabbitContainer.Bus.Advanced.QueueDeclareAsync("accounting-service.task", c => c.AsAutoDelete(true).AsDurable(true));
-        await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.TaskExchange, taskStreamingQueue, "v2.streaming", new Dictionary<string, object>());
+        await this.rabbitContainer.Bus.Advanced.BindAsync(this.rabbitContainer.TaskExchange, taskStreamingQueue, "v3.streaming", new Dictionary<string, object>());
 
         rabbitContainer.Bus.Advanced.Consume(c => {
           c
             .ForQueue(taskStreamingQueue, handlers =>
-              handlers.Add<string>(this.TaskStreamingV2Handler(dbContext)),
+              handlers.Add<string>(this.TaskStreamingV3Handler(dbContext)),
               config => config.WithConsumerTag("accounting-service"));
         });
 
@@ -34,13 +34,16 @@ namespace AccountingService.BackgroundServices {
       }
     }
 
-    private IMessageHandler<string> TaskStreamingV2Handler(ServiceDbContext dbContext) {
+    private IMessageHandler<string> TaskStreamingV3Handler(ServiceDbContext dbContext) {
       return async (message, info, cancellationToken) => {
-        if (!Common.Events.SchemaRegistry.Streaming_V2_Task.TryDeserializeValidated(message.Body, out TaskEvent result)) {
+        if (!Common.Events.SchemaRegistry.Streaming_V3_Task.TryDeserializeValidated(message.Body, out TaskEvent result)) {
           Console.WriteLine("Unable to parse Task streaming event");
           Console.WriteLine(message.Body);
           return AckStrategies.NackWithRequeue;
         }
+
+        // TODO remove test
+        await Task.Delay(10000);
 
         var task = await dbContext.Tasks.FindAsync(result.Payload.Id);
         if (task == null)
@@ -49,7 +52,6 @@ namespace AccountingService.BackgroundServices {
             Description = result.Payload.Description,
             Status = result.Payload.Status,
             TicketId = result.Payload.TicketId,
-            UserId = result.Payload.UserId,
             Fee = result.Payload.Fee,
             Reward = result.Payload.Reward
           });
@@ -58,7 +60,6 @@ namespace AccountingService.BackgroundServices {
           task.Description = result.Payload.Description;
           task.Status = result.Payload.Status;
           task.TicketId = result.Payload.TicketId;
-          task.UserId = result.Payload.UserId;
           task.Fee = result.Payload.Fee;
           task.Reward = result.Payload.Reward;
         }

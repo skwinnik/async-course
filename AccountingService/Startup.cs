@@ -1,12 +1,10 @@
-using System.Net;
 using Common.Auth;
-using Confluent.Kafka;
 using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using AccountingService.BackgroundServices;
-using AccountingService.BL.Tasks;
 using AccountingService.Db;
 using AccountingService.Rabbit;
+using AccountingService.BL;
 
 namespace AccountingService {
   public class Startup {
@@ -33,8 +31,9 @@ namespace AccountingService {
 
       services.AddHostedService<UserConsumerBackgroundService>();
       services.AddHostedService<TaskConsumerBackgroundService>();
+      services.AddHostedService<TaskStatusConsumerBackgroundService>();
 
-      services.AddSingleton<TaskAssignManager>();
+      services.AddSingleton<TransactionsBop>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();

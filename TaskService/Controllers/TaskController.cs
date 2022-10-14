@@ -61,18 +61,17 @@ namespace TaskService.Controllers {
 
       await this.dbContext.SaveChangesAsync();
 
-      if (SchemaRegistry.Streaming_V2_Task.TrySerializeValidated(new Common.Events.Streaming.V2.TaskEvent {
-        Payload = new Common.Events.Streaming.V2.TaskEvent.Task {
+      if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+        Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
           Id = task.Entity.Id,
           Description = task.Entity.Description,
-          Status = (Common.Events.Streaming.V2.TaskStatus)task.Entity.Status,
-          UserId = task.Entity.UserId,
+          Status = (Common.Events.Streaming.V3.TaskStatus)task.Entity.Status,
           Fee = task.Entity.Fee,
           Reward = task.Entity.Reward,
           TicketId = task.Entity.TicketId
         }
       }, out var jsonTask)) {
-        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v2.streaming", false, new Message<string>(jsonTask));
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
       }
 
       if (SchemaRegistry.Business_V1_TaskAssigned.TrySerializeValidated(new Common.Events.Business.V1.TaskAssigned {
