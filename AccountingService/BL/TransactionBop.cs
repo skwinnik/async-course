@@ -1,14 +1,19 @@
 using AccountingService.Db;
+using AccountingService.Rabbit;
+using Common.Events;
+using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 
 namespace AccountingService.BL {
   public class TransactionBop {
+    private readonly RabbitContainer rabbitContainer;
     private readonly IDbContextFactory<ServiceDbContext> dbContextFactory;
     private readonly TransactionPeriodBop transactionPeriodBop;
 
-    public TransactionBop(IDbContextFactory<ServiceDbContext> dbContextFactory, TransactionPeriodBop transactionPeriodBop) {
+    public TransactionBop(IDbContextFactory<ServiceDbContext> dbContextFactory, TransactionPeriodBop transactionPeriodBop, RabbitContainer rabbitContainer) {
       this.dbContextFactory = dbContextFactory;
       this.transactionPeriodBop = transactionPeriodBop;
+      this.rabbitContainer = rabbitContainer;
     }
 
     public async Task CreditUser(Guid userId, decimal amount, Guid taskId) {
@@ -20,7 +25,7 @@ namespace AccountingService.BL {
       if (transactionPeriodId == null)
         transactionPeriodId = await this.transactionPeriodBop.OpenPeriod();
 
-      await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
+      var tranDb = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Assigned Task - {task.TicketId} - {task.Description}",
         Credit = amount,
@@ -28,6 +33,8 @@ namespace AccountingService.BL {
         TransactionPeriodId = transactionPeriodId.Value
       });
       await dbContext.SaveChangesAsync();
+
+      await this.OnTransactionCreated(tranDb.Entity);
     }
 
     public async Task DebitUser(Guid userId, decimal amount, Guid taskId) {
@@ -39,7 +46,7 @@ namespace AccountingService.BL {
       if (transactionPeriodId == null)
         transactionPeriodId = await this.transactionPeriodBop.OpenPeriod();
 
-      await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
+      var tranDb = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Completed Task - {task.TicketId} - {task.Description}",
         Credit = 0,
@@ -47,6 +54,8 @@ namespace AccountingService.BL {
         TransactionPeriodId = transactionPeriodId.Value
       });
       await dbContext.SaveChangesAsync();
+
+      await this.OnTransactionCreated(tranDb.Entity);
     }
 
     public async Task PaySalary(Guid userId, Guid transactionPeriodId) {
@@ -64,7 +73,7 @@ namespace AccountingService.BL {
       if (amount <= 0)
         return;
 
-      await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
+      var tranDb = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Salary - {transactionPeriod.Name}",
         Credit = amount,
@@ -72,6 +81,8 @@ namespace AccountingService.BL {
         TransactionPeriodId = transactionPeriodId
       });
       await dbContext.SaveChangesAsync();
+
+      await this.OnTransactionCreated(tranDb.Entity);
     }
 
     public async Task MoveDebtToNewPeriod(Guid userId, Guid oldPeriodId, Guid newPeriodId) {
@@ -92,7 +103,7 @@ namespace AccountingService.BL {
       if (amount >= 0)
         return;
 
-      await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
+      var tran1 = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Move Credit To Next Period - {newTransactionPeriod.Name}",
         Credit = 0,
@@ -100,7 +111,7 @@ namespace AccountingService.BL {
         TransactionPeriodId = oldTransactionPeriod.Id
       });
 
-      await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
+      var tran2 = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Moved Credit From Prev Period - {oldTransactionPeriod.Name}",
         Credit = Math.Abs(amount),
@@ -109,6 +120,25 @@ namespace AccountingService.BL {
       });
 
       await dbContext.SaveChangesAsync();
+
+      await this.OnTransactionCreated(tran1.Entity);
+      await this.OnTransactionCreated(tran2.Entity);
+    }
+
+    private async Task OnTransactionCreated(Db.Models.Transaction tran) {
+      if (SchemaRegistry.Streaming_V1_Transaction.TrySerializeValidated(new Common.Events.Streaming.V1.TransactionEvent {
+        Payload = new Common.Events.Streaming.V1.TransactionEvent.Transaction {
+          Id = tran.Id,
+          Credit = tran.Credit,
+          Debit = tran.Debit,
+          Description = tran.Description,
+          TimeStamp = tran.TimeStamp,
+          TransactionPeriodId = tran.TransactionPeriodId,
+          UserId = tran.UserId
+        }
+      }, out var jsonTrans)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TransactionExchange, "v1.streaming", false, new Message<string>(jsonTrans));
+      }
     }
 
     public async Task<IList<Db.Models.Transaction>> GetTransactions(Guid userId) {
