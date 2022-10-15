@@ -1,6 +1,8 @@
-namespace AccountingService.Db.Models {
-  using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace AnalyticsService.Db.Models {
   public class TransactionPeriod {
+    [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid Id { get; set; } = Guid.Empty;
     public DateTime StartTime { get; set; } = DateTime.UtcNow;
     public DateTime? EndTime { get; set; }

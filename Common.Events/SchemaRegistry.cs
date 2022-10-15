@@ -12,6 +12,7 @@ namespace Common.Events {
     public static Schema<Streaming.V2.TaskEvent> Streaming_V2_Task => new Schema<Streaming.V2.TaskEvent>("./Streaming/V2/TaskEvent.json");
     public static Schema<Streaming.V3.TaskEvent> Streaming_V3_Task => new Schema<Streaming.V3.TaskEvent>("./Streaming/V3/TaskEvent.json");
     public static Schema<Streaming.V1.TransactionEvent> Streaming_V1_Transaction => new Schema<Streaming.V1.TransactionEvent>("./Streaming/V1/TransactionEvent.json");
+    public static Schema<Streaming.V1.TransactionPeriodEvent> Streaming_V1_TransactionPeriod => new Schema<Streaming.V1.TransactionPeriodEvent>("./Streaming/V1/TransactionPeriodEvent.json");
 
   }
 

@@ -44,6 +44,10 @@ namespace AnalyticsService.BackgroundServices {
             return AckStrategies.NackWithRequeue;
           }
 
+          var tran = await dbContext.Transactions.FindAsync(result.Payload.Id);
+          if (tran != null)
+            return AckStrategies.Ack;
+
           await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
             Id = result.Payload.Id,
             UserId = result.Payload.UserId,

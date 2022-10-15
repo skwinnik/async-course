@@ -31,6 +31,7 @@ namespace AnalyticsService {
       services.AddHostedService<UserConsumerBackgroundService>();
       services.AddHostedService<TaskConsumerBackgroundService>();
       services.AddHostedService<TransactionConsumerBackgroundService>();
+      services.AddHostedService<TransactionPeriodConsumerBackgroundService>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
