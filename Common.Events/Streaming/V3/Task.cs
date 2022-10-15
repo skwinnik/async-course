@@ -25,7 +25,7 @@ namespace Common.Events.Streaming.V3 {
 
       [JsonProperty("status", Required = Required.Always)]
       public TaskStatus Status { get; set; } = TaskStatus.Pending;
-      [JsonProperty("completedAt", Required = Required.Always)]
+      [JsonProperty("completedAt", Required = Required.Default)]
       public DateTime? CompletedAt { get; set; }
       [JsonProperty("userId", Required = Required.Always)]
       public Guid UserId { get; set; }

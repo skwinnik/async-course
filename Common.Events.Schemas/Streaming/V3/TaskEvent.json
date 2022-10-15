@@ -26,7 +26,10 @@
           ]
         },
         "completedAt": {
-          "type": "string",
+          "type": [
+            "string",
+            "null"
+          ],
           "format": "date-time"
         },
         "userId": {
@@ -40,7 +43,6 @@
         "fee",
         "reward",
         "status",
-        "completedAt",
         "userId"
       ]
     }
