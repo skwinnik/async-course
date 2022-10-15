@@ -117,6 +117,9 @@ namespace TaskService.Controllers {
       if (task.UserId != this.userContext.GetCurrentUserId())
         return this.Unauthorized();
 
+      if (task.Status == Db.Models.TaskStatus.Completed)
+        return this.Ok();
+
       task.Status = Db.Models.TaskStatus.Completed;
       await this.dbContext.SaveChangesAsync();
 
