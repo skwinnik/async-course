@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using AnalyticsService.BackgroundServices;
 using AnalyticsService.Db;
 using AnalyticsService.Rabbit;
+using AnalyticsService.BL;
 
 namespace AnalyticsService {
   public class Startup {
@@ -32,6 +33,8 @@ namespace AnalyticsService {
       services.AddHostedService<TaskConsumerBackgroundService>();
       services.AddHostedService<TransactionConsumerBackgroundService>();
       services.AddHostedService<TransactionPeriodConsumerBackgroundService>();
+
+      services.AddSingleton<ReportBop>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
