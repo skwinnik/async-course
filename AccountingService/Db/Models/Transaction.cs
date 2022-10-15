@@ -10,5 +10,7 @@ namespace AccountingService.Db.Models {
     public Guid TaskId { get; set; }
     public decimal Debit { get; set; }
     public decimal Credit { get; set; }
+
+    public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
   }
 }
