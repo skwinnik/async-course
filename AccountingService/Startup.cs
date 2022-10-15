@@ -32,8 +32,10 @@ namespace AccountingService {
       services.AddHostedService<UserConsumerBackgroundService>();
       services.AddHostedService<TaskConsumerBackgroundService>();
       services.AddHostedService<TaskStatusConsumerBackgroundService>();
+      services.AddHostedService<TransactionPeriodClosedConsumerBackgroundService>();
 
-      services.AddSingleton<TransactionsBop>();
+      services.AddSingleton<TransactionBop>();
+      services.AddSingleton<TransactionPeriodBop>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();

@@ -9,9 +9,9 @@ namespace AccountingService.BackgroundServices {
   public class TaskStatusConsumerBackgroundService : BackgroundService {
     private readonly RabbitContainer rabbitContainer;
     private readonly IDbContextFactory<ServiceDbContext> dbContextFactory;
-    private readonly TransactionsBop transactionsBop;
+    private readonly TransactionBop transactionsBop;
 
-    public TaskStatusConsumerBackgroundService(RabbitContainer rabbitContainer, IDbContextFactory<ServiceDbContext> dbContextFactory, TransactionsBop transactionsBop) {
+    public TaskStatusConsumerBackgroundService(RabbitContainer rabbitContainer, IDbContextFactory<ServiceDbContext> dbContextFactory, TransactionBop transactionsBop) {
       this.rabbitContainer = rabbitContainer;
       this.dbContextFactory = dbContextFactory;
       this.transactionsBop = transactionsBop;

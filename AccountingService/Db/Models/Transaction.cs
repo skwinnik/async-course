@@ -5,9 +5,8 @@ namespace AccountingService.Db.Models {
 
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid UserId { get; set; }
-
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public Guid TaskId { get; set; }
+    public Guid TransactionPeriodId { get; set; }
+    public string Description { get; set; } = "";
     public decimal Debit { get; set; }
     public decimal Credit { get; set; }
 

@@ -6,6 +6,7 @@ namespace Common.Events {
   public static class SchemaRegistry {
     public static Schema<Business.V1.TaskAssigned> Business_V1_TaskAssigned => new Schema<Business.V1.TaskAssigned>("./Business/V1/TaskAssigned.json");
     public static Schema<Business.V1.TaskCompleted> Business_V1_TaskCompleted => new Schema<Business.V1.TaskCompleted>("./Business/V1/TaskCompleted.json");
+    public static Schema<Business.V1.TransactionPeriodClosedEvent> Business_V1_DayCompleted => new Schema<Business.V1.TransactionPeriodClosedEvent>("./Business/V1/TransactionPeriodClosedEvent.json");
     public static Schema<Streaming.V1.UserEvent> Streaming_V1_User => new Schema<Streaming.V1.UserEvent>("./Streaming/V1/UserEvent.json");
     public static Schema<Streaming.V1.TaskEvent> Streaming_V1_Task => new Schema<Streaming.V1.TaskEvent>("./Streaming/V1/TaskEvent.json");
     public static Schema<Streaming.V2.TaskEvent> Streaming_V2_Task => new Schema<Streaming.V2.TaskEvent>("./Streaming/V2/TaskEvent.json");

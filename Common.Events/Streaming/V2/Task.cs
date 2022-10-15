@@ -36,7 +36,7 @@ namespace Common.Events.Streaming.V2 {
 
     public override string EventDescription => "Task streaming event";
 
-    public override int EventVersion => 1;
+    public override int EventVersion => 2;
 
     [JsonProperty("task", Required = Required.Always)]
     public Task Payload { get; set; } = null!;
