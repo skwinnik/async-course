@@ -62,6 +62,7 @@ namespace AnalyticsService.BackgroundServices {
             task.TicketId = result.Payload.TicketId;
             task.Fee = result.Payload.Fee;
             task.Reward = result.Payload.Reward;
+            task.CompletedAt = result.Payload.CompletedAt;
           }
 
           await dbContext.SaveChangesAsync(cancellationToken);
