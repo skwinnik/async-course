@@ -1,0 +1,65 @@
+{
+  "definitions": {
+    "Transaction": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        },
+        "transactionPeriodId": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "debit": {
+          "type": "number"
+        },
+        "credit": {
+          "type": "number"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "transactionPeriodId",
+        "description",
+        "debit",
+        "credit",
+        "timestamp"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "eventName": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "eventVersion": {
+      "type": "integer"
+    },
+    "transaction": {
+      "$ref": "#/definitions/Transaction"
+    }
+  },
+  "required": [
+    "eventId",
+    "eventName",
+    "eventDescription",
+    "eventVersion",
+    "transaction"
+  ]
+}
