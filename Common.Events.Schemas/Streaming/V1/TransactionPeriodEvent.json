@@ -1,0 +1,60 @@
+{
+  "definitions": {
+    "TransactionPeriod": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "endTime": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "name": {
+          "type": "string"
+        },
+        "isOpen": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "startTime",
+        "name",
+        "isOpen"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "eventName": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "eventVersion": {
+      "type": "integer"
+    },
+    "transactionPeriod": {
+      "$ref": "#/definitions/TransactionPeriod"
+    }
+  },
+  "required": [
+    "eventId",
+    "eventName",
+    "eventDescription",
+    "eventVersion",
+    "transactionPeriod"
+  ]
+}

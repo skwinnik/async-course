@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskService.BackgroundServices;
 using TaskService.BL.Tasks;
 using TaskService.Db;
+using TaskService.Rabbit;
 
 namespace TaskService {
   public class Startup {
@@ -28,11 +29,12 @@ namespace TaskService {
       services.AddSwaggerGen();
 
       services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
+      services.AddSingleton<RabbitContainer>();
 
-      services.AddHostedService<UserCreatedConsumerBackgroundService>();
-      services.AddHostedService<UserChangedConsumerBackgroundService>();
+      services.AddHostedService<ConsumerBackgroundService>();
 
       services.AddSingleton<TaskAssignManager>();
+      services.AddSingleton<TaskPriceManager>();
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();

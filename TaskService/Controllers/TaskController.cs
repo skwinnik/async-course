@@ -1,9 +1,12 @@
+using System.Text.RegularExpressions;
 using Common.Auth;
+using Common.Events;
 using EasyNetQ;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TaskService.BL.Tasks;
 using TaskService.Db;
+using TaskService.Rabbit;
 
 namespace TaskService.Controllers {
   [ApiController]
@@ -11,16 +14,19 @@ namespace TaskService.Controllers {
   public class TaskController : ControllerBase {
     private readonly ServiceDbContext dbContext;
     private readonly TaskAssignManager taskAssignManager;
-    private readonly IBus rabbitBus;
+    private readonly TaskPriceManager taskPriceManager;
+    private readonly RabbitContainer rabbitContainer;
     private readonly UserContext userContext;
 
     public TaskController(ServiceDbContext dbContext,
       TaskAssignManager taskAssignManager,
-      IBus rabbitBus, UserContext
+      TaskPriceManager taskPriceManager,
+      RabbitContainer rabbitContainer, UserContext
       userContext) {
       this.dbContext = dbContext;
       this.taskAssignManager = taskAssignManager;
-      this.rabbitBus = rabbitBus;
+      this.taskPriceManager = taskPriceManager;
+      this.rabbitContainer = rabbitContainer;
       this.userContext = userContext;
     }
 
@@ -37,32 +43,45 @@ namespace TaskService.Controllers {
       return this.Ok(await this.dbContext.Tasks.ToListAsync());
     }
 
+    public class CreateTaskRequest {
+      public string TicketId { get; set; } = "";
+      public string Description { get; set; } = "";
+    }
+
     [HttpPost]
     [Authorize("admin", "manager")]
-    public async Task<ActionResult> Create([FromBody] string description) {
+    public async Task<ActionResult> Create([FromBody] CreateTaskRequest request) {
       var task = await this.dbContext.Tasks.AddAsync(new Db.Models.Task {
-        Description = description,
-        UserId = await this.taskAssignManager.GetUserToAssign()
+        Description = request.Description,
+        TicketId = request.TicketId,
+        UserId = await this.taskAssignManager.GetUserToAssign(),
+        Fee = await this.taskPriceManager.GetFee(),
+        Reward = await this.taskPriceManager.GetReward(),
       });
+
       await this.dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<Common.CudEvents.TaskCreated>(new Common.CudEvents.TaskCreated {
-        Task = new Common.Task {
-          TaskId = task.Entity.Id,
-          TaskDescription = task.Entity.Description,
-          TaskStatus = task.Entity.Status,
-          UserId = task.Entity.UserId
+      if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+        Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
+          Id = task.Entity.Id,
+          Description = task.Entity.Description,
+          Status = (Common.Events.Streaming.V3.TaskStatus)task.Entity.Status,
+          Fee = task.Entity.Fee,
+          Reward = task.Entity.Reward,
+          TicketId = task.Entity.TicketId,
+          UserId = task.Entity.UserId,
+          CompletedAt = null
         }
-      });
+      }, out var jsonTask)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
+      }
 
-      this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskAssigned>(new Common.BusinessEvents.TaskAssigned {
-        Task = new Common.Task {
-          TaskId = task.Entity.Id,
-          TaskDescription = task.Entity.Description,
-          TaskStatus = task.Entity.Status,
-          UserId = task.Entity.UserId
-        }
-      });
+      if (SchemaRegistry.Business_V1_TaskAssigned.TrySerializeValidated(new Common.Events.Business.V1.TaskAssigned {
+        TaskId = task.Entity.Id,
+        UserId = task.Entity.UserId
+      }, out var jsonTaskAssigned)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.assigned", false, new Message<string>(jsonTaskAssigned));
+      }
 
       return this.Ok();
     }
@@ -70,7 +89,7 @@ namespace TaskService.Controllers {
     [HttpPost]
     [Authorize("admin", "manager")]
     public async Task<ActionResult> Shuffle() {
-      var tasks = await this.dbContext.Tasks.Where(t => t.Status == Common.TaskStatus.Pending).ToListAsync();
+      var tasks = await this.dbContext.Tasks.Where(t => t.Status == Db.Models.TaskStatus.Pending).ToListAsync();
       for (var i = 0; i < tasks.Count; i++) {
         tasks[i].UserId = await this.taskAssignManager.GetUserToAssign();
       }
@@ -78,14 +97,28 @@ namespace TaskService.Controllers {
       await this.dbContext.SaveChangesAsync();
 
       for (var i = 0; i < tasks.Count; i++) {
-        this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskAssigned>(new Common.BusinessEvents.TaskAssigned {
-          Task = new Common.Task {
-            TaskId = tasks[i].Id,
-            TaskDescription = tasks[i].Description,
-            TaskStatus = tasks[i].Status,
-            UserId = tasks[i].UserId
+
+        if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+          Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
+            Id = tasks[i].Id,
+            Description = tasks[i].Description,
+            Status = (Common.Events.Streaming.V3.TaskStatus)tasks[i].Status,
+            Fee = tasks[i].Fee,
+            Reward = tasks[i].Reward,
+            TicketId = tasks[i].TicketId,
+            UserId = tasks[i].UserId,
+            CompletedAt = null
           }
-        });
+        }, out var jsonTask)) {
+          await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
+        }
+
+        if (SchemaRegistry.Business_V1_TaskAssigned.TrySerializeValidated(new Common.Events.Business.V1.TaskAssigned {
+          TaskId = tasks[i].Id,
+          UserId = tasks[i].UserId
+        }, out var jsonTaskAssigned)) {
+          await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.assigned", false, new Message<string>(jsonTaskAssigned));
+        }
       }
 
       return this.Ok();
@@ -102,17 +135,34 @@ namespace TaskService.Controllers {
       if (task.UserId != this.userContext.GetCurrentUserId())
         return this.Unauthorized();
 
-      task.Status = Common.TaskStatus.Completed;
+      if (task.Status == Db.Models.TaskStatus.Completed)
+        return this.Ok();
+
+      task.Status = Db.Models.TaskStatus.Completed;
+      task.CompletedAt = DateTime.UtcNow;
       await this.dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<Common.BusinessEvents.TaskCompleted>(new Common.BusinessEvents.TaskCompleted {
-        Task = new Common.Task {
-          TaskId = task.Id,
-          TaskDescription = task.Description,
-          TaskStatus = task.Status,
-          UserId = task.UserId
+      if (SchemaRegistry.Business_V1_TaskCompleted.TrySerializeValidated(new Common.Events.Business.V1.TaskCompleted {
+        TaskId = task.Id,
+        UserId = task.UserId
+      }, out var jsonTaskCompleted)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.completed", false, new Message<string>(jsonTaskCompleted));
+      }
+
+      if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+        Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
+          Id = task.Id,
+          Description = task.Description,
+          Status = (Common.Events.Streaming.V3.TaskStatus)task.Status,
+          Fee = task.Fee,
+          Reward = task.Reward,
+          TicketId = task.TicketId,
+          UserId = task.UserId,
+          CompletedAt = task.CompletedAt
         }
-      });
+      }, out var jsonTask)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
+      }
 
       return this.Ok();
     }

@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using AuthService.Models.Users;
 using Common.Auth;
 using EasyNetQ;
+using AuthService.Rabbit;
+using Common.Events;
 
 namespace AuthService.Controllers {
   [ApiController]
@@ -11,12 +13,12 @@ namespace AuthService.Controllers {
   public class UsersController : ControllerBase {
     private readonly ServiceDbContext dbContext;
     private readonly UserContext userContext;
-    private readonly IBus rabbitBus;
+    private readonly RabbitContainer rabbitContainer;
 
-    public UsersController(ServiceDbContext dbContext, UserContext userContext, IBus rabbitBus) {
+    public UsersController(ServiceDbContext dbContext, UserContext userContext, RabbitContainer rabbitContainer) {
       this.dbContext = dbContext;
       this.userContext = userContext;
-      this.rabbitBus = rabbitBus;
+      this.rabbitContainer = rabbitContainer;
     }
 
     [HttpGet]
@@ -40,13 +42,15 @@ namespace AuthService.Controllers {
       var addedUser = await this.dbContext.Users.AddAsync(new Db.Models.User() { Name = user.Username, Password = user.Password, Role = role });
       await this.dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<Common.CudEvents.UserCreated>(new Common.CudEvents.UserCreated {
-        User = new Common.User {
-          UserId = addedUser.Entity.Id,
-          UserName = addedUser.Entity.Name,
-          RoleName = role.Name
+      if (SchemaRegistry.Streaming_V1_User.TrySerializeValidated(new Common.Events.Streaming.V1.UserEvent {
+        Payload = new Common.Events.Streaming.V1.UserEvent.User {
+          Id = addedUser.Entity.Id,
+          Name = addedUser.Entity.Name,
+          RoleName = role.Name,
         }
-      });
+      }, out var json)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.UserExchange, "v1.streaming", false, new Message<string>(json));
+      }
 
       return this.Ok();
     }
@@ -78,13 +82,15 @@ namespace AuthService.Controllers {
 
       await dbContext.SaveChangesAsync();
 
-      this.rabbitBus.PubSub.Publish<Common.CudEvents.UserChanged>(new Common.CudEvents.UserChanged {
-        User = new Common.User {
-          UserId = user.Id,
-          UserName = user.Name,
-          RoleName = user.Role.Name
+      if (SchemaRegistry.Streaming_V1_User.TrySerializeValidated(new Common.Events.Streaming.V1.UserEvent {
+        Payload = new Common.Events.Streaming.V1.UserEvent.User {
+          Id = user.Id,
+          Name = user.Name,
+          RoleName = user.Role.Name,
         }
-      });
+      }, out var json)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.UserExchange, "v1.streaming", false, new Message<string>(json));
+      }
 
       return this.Ok();
     }

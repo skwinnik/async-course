@@ -1,0 +1,64 @@
+{
+  "definitions": {
+    "Task": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "fee": {
+          "type": "number"
+        },
+        "reward": {
+          "type": "number"
+        },
+        "status": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        },
+        "userId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "fee",
+        "reward",
+        "status",
+        "userId"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "eventName": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "eventVersion": {
+      "type": "integer"
+    },
+    "task": {
+      "$ref": "#/definitions/Task"
+    }
+  },
+  "required": [
+    "eventId",
+    "eventName",
+    "eventDescription",
+    "eventVersion",
+    "task"
+  ]
+}

@@ -2,6 +2,7 @@ using EasyNetQ;
 using Microsoft.EntityFrameworkCore;
 using AuthService.Db;
 using Common.Auth;
+using AuthService.Rabbit;
 
 namespace AuthService {
   public class Startup {
@@ -24,14 +25,16 @@ namespace AuthService {
       services.AddSwaggerGen();
 
       services.AddSingleton<IBus>(s => RabbitHutch.CreateBus(this.Configuration.RabbitConnectionString));
+      services.AddSingleton<RabbitContainer, RabbitContainer>();
 
-      services.AddDbContextFactory<ServiceDbContext>(o => 
-        o.UseNpgsql(this.Configuration.SqlConnectionString, 
+      services.AddDbContextFactory<ServiceDbContext>(o =>
+        o.UseNpgsql(this.Configuration.SqlConnectionString,
           x => x.UseAdminDatabase("postgres")));
 
       services.AddHttpContextAccessor();
       services.AddScoped<AuthContext>();
       services.AddScoped<UserContext>();
+
     }
   }
 }

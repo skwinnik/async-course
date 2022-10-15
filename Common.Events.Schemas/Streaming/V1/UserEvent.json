@@ -1,0 +1,48 @@
+{
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "roleName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "roleName"
+      ]
+    }
+  },
+  "type": "object",
+  "properties": {
+    "eventId": {
+      "type": "string"
+    },
+    "eventName": {
+      "type": "string"
+    },
+    "eventDescription": {
+      "type": "string"
+    },
+    "eventVersion": {
+      "type": "integer"
+    },
+    "user": {
+      "$ref": "#/definitions/User"
+    }
+  },
+  "required": [
+    "eventId",
+    "eventName",
+    "eventDescription",
+    "eventVersion",
+    "user"
+  ]
+}

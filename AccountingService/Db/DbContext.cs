@@ -8,5 +8,11 @@ namespace AccountingService.Db {
     }
     public DbSet<User> Users => Set<User>();
     public DbSet<Task> Tasks => Set<Task>();
+    public DbSet<TaskAssignedLog> TaskAssignedLogs => Set<TaskAssignedLog>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<TransactionPeriod> TransactionPeriods => Set<TransactionPeriod>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder) {
+    }
   }
 }
