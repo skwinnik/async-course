@@ -4,9 +4,11 @@ using Microsoft.EntityFrameworkCore;
 namespace AccountingService.BL {
   public class TransactionBop {
     private readonly IDbContextFactory<ServiceDbContext> dbContextFactory;
+    private readonly TransactionPeriodBop transactionPeriodBop;
 
-    public TransactionBop(IDbContextFactory<ServiceDbContext> dbContextFactory) {
+    public TransactionBop(IDbContextFactory<ServiceDbContext> dbContextFactory, TransactionPeriodBop transactionPeriodBop) {
       this.dbContextFactory = dbContextFactory;
+      this.transactionPeriodBop = transactionPeriodBop;
     }
 
     public async Task CreditUser(Guid userId, decimal amount, Guid taskId) {
@@ -14,16 +16,16 @@ namespace AccountingService.BL {
       var task = await dbContext.Tasks.FindAsync(taskId);
       if (task == null) throw new ApplicationException($"Task with ID {taskId} doesn't exist");
 
-      var transactionPeriod = await dbContext.TransactionPeriods.SingleOrDefaultAsync(p => p.IsOpen);
-      if (transactionPeriod == null)
-        throw new ApplicationException($"No open transaction periods");
+      var transactionPeriodId = (await dbContext.TransactionPeriods.SingleOrDefaultAsync(p => p.IsOpen))?.Id;
+      if (transactionPeriodId == null)
+        transactionPeriodId = await this.transactionPeriodBop.OpenPeriod();
 
       await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Assigned Task - {task.TicketId} - {task.Description}",
         Credit = amount,
         Debit = 0,
-        TransactionPeriodId = transactionPeriod.Id
+        TransactionPeriodId = transactionPeriodId.Value
       });
       await dbContext.SaveChangesAsync();
     }
@@ -33,16 +35,16 @@ namespace AccountingService.BL {
       var task = await dbContext.Tasks.FindAsync(taskId);
       if (task == null) throw new ApplicationException($"Task with ID {taskId} doesn't exist");
 
-      var transactionPeriod = await dbContext.TransactionPeriods.SingleOrDefaultAsync(p => p.IsOpen);
-      if (transactionPeriod == null)
-        throw new ApplicationException($"No open transaction periods");
+      var transactionPeriodId = (await dbContext.TransactionPeriods.SingleOrDefaultAsync(p => p.IsOpen))?.Id;
+      if (transactionPeriodId == null)
+        transactionPeriodId = await this.transactionPeriodBop.OpenPeriod();
 
       await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Completed Task - {task.TicketId} - {task.Description}",
         Credit = 0,
         Debit = amount,
-        TransactionPeriodId = transactionPeriod.Id
+        TransactionPeriodId = transactionPeriodId.Value
       });
       await dbContext.SaveChangesAsync();
     }
@@ -59,7 +61,7 @@ namespace AccountingService.BL {
       var transactions = await dbContext.Transactions.Where(t => t.UserId == userId && t.TransactionPeriodId == transactionPeriodId).ToListAsync();
       decimal amount = transactions.Sum(t => t.Debit - t.Credit);
 
-      if (amount < 0)
+      if (amount <= 0)
         return;
 
       await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
@@ -89,7 +91,7 @@ namespace AccountingService.BL {
       decimal amount = transactions.Sum(t => t.Debit - t.Credit);
       if (amount >= 0)
         return;
-      
+
       await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
         UserId = userId,
         Description = $"Move Credit To Next Period - {newTransactionPeriod.Name}",
