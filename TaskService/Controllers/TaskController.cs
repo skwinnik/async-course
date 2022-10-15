@@ -68,7 +68,9 @@ namespace TaskService.Controllers {
           Status = (Common.Events.Streaming.V3.TaskStatus)task.Entity.Status,
           Fee = task.Entity.Fee,
           Reward = task.Entity.Reward,
-          TicketId = task.Entity.TicketId
+          TicketId = task.Entity.TicketId,
+          UserId = task.Entity.UserId,
+          CompletedAt = null
         }
       }, out var jsonTask)) {
         await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
@@ -95,6 +97,22 @@ namespace TaskService.Controllers {
       await this.dbContext.SaveChangesAsync();
 
       for (var i = 0; i < tasks.Count; i++) {
+
+        if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+          Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
+            Id = tasks[i].Id,
+            Description = tasks[i].Description,
+            Status = (Common.Events.Streaming.V3.TaskStatus)tasks[i].Status,
+            Fee = tasks[i].Fee,
+            Reward = tasks[i].Reward,
+            TicketId = tasks[i].TicketId,
+            UserId = tasks[i].UserId,
+            CompletedAt = null
+          }
+        }, out var jsonTask)) {
+          await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
+        }
+
         if (SchemaRegistry.Business_V1_TaskAssigned.TrySerializeValidated(new Common.Events.Business.V1.TaskAssigned {
           TaskId = tasks[i].Id,
           UserId = tasks[i].UserId
@@ -121,6 +139,7 @@ namespace TaskService.Controllers {
         return this.Ok();
 
       task.Status = Db.Models.TaskStatus.Completed;
+      task.CompletedAt = DateTime.UtcNow;
       await this.dbContext.SaveChangesAsync();
 
       if (SchemaRegistry.Business_V1_TaskCompleted.TrySerializeValidated(new Common.Events.Business.V1.TaskCompleted {
@@ -128,6 +147,21 @@ namespace TaskService.Controllers {
         UserId = task.UserId
       }, out var jsonTaskCompleted)) {
         await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v1.completed", false, new Message<string>(jsonTaskCompleted));
+      }
+
+      if (SchemaRegistry.Streaming_V3_Task.TrySerializeValidated(new Common.Events.Streaming.V3.TaskEvent {
+        Payload = new Common.Events.Streaming.V3.TaskEvent.Task {
+          Id = task.Id,
+          Description = task.Description,
+          Status = (Common.Events.Streaming.V3.TaskStatus)task.Status,
+          Fee = task.Fee,
+          Reward = task.Reward,
+          TicketId = task.TicketId,
+          UserId = task.UserId,
+          CompletedAt = task.CompletedAt
+        }
+      }, out var jsonTask)) {
+        await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TaskExchange, "v3.streaming", false, new Message<string>(jsonTask));
       }
 
       return this.Ok();

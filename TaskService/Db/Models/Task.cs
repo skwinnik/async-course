@@ -6,6 +6,7 @@ namespace TaskService.Db.Models {
     public string TicketId { get; set; } = "";
     public string Description { get; set; } = "";
     public TaskStatus Status { get; set; } = TaskStatus.Pending;
+    public DateTime? CompletedAt { get; set; }
     public decimal Fee { get; set; }
     public decimal Reward { get; set; }
 

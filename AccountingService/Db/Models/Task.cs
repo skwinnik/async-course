@@ -9,8 +9,5 @@ namespace AccountingService.Db.Models {
     public decimal Fee { get; set; }
     public decimal Reward { get; set; }
     public Common.Events.Streaming.V3.TaskStatus Status { get; set; } = Common.Events.Streaming.V3.TaskStatus.Pending;
-
-    [DatabaseGenerated(DatabaseGeneratedOption.None)]
-    public Guid UserId { get; set; } = Guid.Empty;
   }
 }

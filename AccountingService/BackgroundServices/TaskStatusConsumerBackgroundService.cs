@@ -114,14 +114,6 @@ namespace AccountingService.BackgroundServices {
             return AckStrategies.NackWithRequeue;
           }
 
-          if (task.Status == Common.Events.Streaming.V3.TaskStatus.Completed) {
-            Console.WriteLine($"Task {result.TaskId} already completed");
-            return AckStrategies.Ack;
-          }
-
-          task.Status = Common.Events.Streaming.V3.TaskStatus.Completed;
-          await dbContext.SaveChangesAsync();
-
           await this.transactionsBop.DebitUser(result.UserId, task.Reward, result.TaskId);
 
           Console.WriteLine("Ack Completed " + result.TaskId);

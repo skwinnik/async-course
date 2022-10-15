@@ -52,7 +52,8 @@ namespace AnalyticsService.BackgroundServices {
               Status = result.Payload.Status,
               TicketId = result.Payload.TicketId,
               Fee = result.Payload.Fee,
-              Reward = result.Payload.Reward
+              Reward = result.Payload.Reward,
+              CompletedAt = result.Payload.CompletedAt
             });
 
           if (task != null) {

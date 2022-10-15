@@ -24,6 +24,13 @@
             0,
             1
           ]
+        },
+        "completedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string"
         }
       },
       "required": [
@@ -32,7 +39,9 @@
         "description",
         "fee",
         "reward",
-        "status"
+        "status",
+        "completedAt",
+        "userId"
       ]
     }
   },
