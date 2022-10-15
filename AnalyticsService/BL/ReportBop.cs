@@ -11,7 +11,8 @@ namespace AnalyticsService.BL {
 
     public async Task<ManagementEarnedReport> GetManagementEarnedReport(Guid transactionPeriodId) {
       var dbContext = await this.dbContextFactory.CreateDbContextAsync();
-      var transactions = await dbContext.Transactions.Where(t => t.TransactionPeriodId == transactionPeriodId).ToListAsync();
+      var transactions = await dbContext.Transactions.Where(t => t.TransactionPeriodId == transactionPeriodId 
+        && t.TransactionType != Common.Events.Streaming.V1.TransactionEvent.TransactionType.Move).ToListAsync();
 
       var amount = transactions.Sum(t => t.Credit - t.Debit);
 
