@@ -55,7 +55,8 @@ namespace AnalyticsService.BackgroundServices {
             Debit = result.Payload.Debit,
             Description = result.Payload.Description,
             TimeStamp = result.Payload.TimeStamp,
-            TransactionPeriodId = result.Payload.TransactionPeriodId
+            TransactionPeriodId = result.Payload.TransactionPeriodId,
+            TransactionType = result.Payload.TransactionType
           });
 
           await dbContext.SaveChangesAsync(cancellationToken);

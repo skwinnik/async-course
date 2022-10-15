@@ -30,7 +30,8 @@ namespace AccountingService.BL {
         Description = $"Assigned Task - {task.TicketId} - {task.Description}",
         Credit = amount,
         Debit = 0,
-        TransactionPeriodId = transactionPeriodId.Value
+        TransactionPeriodId = transactionPeriodId.Value,
+        TransactionType = Db.Models.TransactionType.Task
       });
       await dbContext.SaveChangesAsync();
 
@@ -51,7 +52,8 @@ namespace AccountingService.BL {
         Description = $"Completed Task - {task.TicketId} - {task.Description}",
         Credit = 0,
         Debit = amount,
-        TransactionPeriodId = transactionPeriodId.Value
+        TransactionPeriodId = transactionPeriodId.Value,
+        TransactionType = Db.Models.TransactionType.Task
       });
       await dbContext.SaveChangesAsync();
 
@@ -78,7 +80,8 @@ namespace AccountingService.BL {
         Description = $"Salary - {transactionPeriod.Name}",
         Credit = amount,
         Debit = 0,
-        TransactionPeriodId = transactionPeriodId
+        TransactionPeriodId = transactionPeriodId,
+        TransactionType = Db.Models.TransactionType.Salary
       });
       await dbContext.SaveChangesAsync();
 
@@ -108,7 +111,8 @@ namespace AccountingService.BL {
         Description = $"Move Credit To Next Period - {newTransactionPeriod.Name}",
         Credit = 0,
         Debit = Math.Abs(amount),
-        TransactionPeriodId = oldTransactionPeriod.Id
+        TransactionPeriodId = oldTransactionPeriod.Id,
+        TransactionType = Db.Models.TransactionType.Move
       });
 
       var tran2 = await dbContext.Transactions.AddAsync(new Db.Models.Transaction {
@@ -116,7 +120,8 @@ namespace AccountingService.BL {
         Description = $"Moved Credit From Prev Period - {oldTransactionPeriod.Name}",
         Credit = Math.Abs(amount),
         Debit = 0,
-        TransactionPeriodId = newTransactionPeriod.Id
+        TransactionPeriodId = newTransactionPeriod.Id,
+        TransactionType = Db.Models.TransactionType.Move
       });
 
       await dbContext.SaveChangesAsync();
@@ -134,7 +139,8 @@ namespace AccountingService.BL {
           Description = tran.Description,
           TimeStamp = tran.TimeStamp,
           TransactionPeriodId = tran.TransactionPeriodId,
-          UserId = tran.UserId
+          UserId = tran.UserId,
+          TransactionType = (Common.Events.Streaming.V1.TransactionEvent.TransactionType)tran.TransactionType
         }
       }, out var jsonTrans)) {
         await this.rabbitContainer.Bus.Advanced.PublishAsync(this.rabbitContainer.TransactionExchange, "v1.streaming", false, new Message<string>(jsonTrans));

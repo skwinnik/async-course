@@ -21,6 +21,14 @@
         "credit": {
           "type": "number"
         },
+        "transactionType": {
+          "type": "integer",
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
         "timestamp": {
           "type": "string",
           "format": "date-time"
@@ -33,6 +41,7 @@
         "description",
         "debit",
         "credit",
+        "transactionType",
         "timestamp"
       ]
     }

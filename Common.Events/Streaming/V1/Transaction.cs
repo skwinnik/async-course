@@ -3,6 +3,10 @@ using Newtonsoft.Json;
 namespace Common.Events.Streaming.V1 {
 
   public class TransactionEvent : AbstractEvent {
+
+    public enum TransactionType {
+      Task, Salary, Move
+    }
     public class Transaction {
       [JsonProperty("id", Required = Required.Always)]
       public Guid Id { get; set; } = Guid.Empty;
@@ -21,6 +25,9 @@ namespace Common.Events.Streaming.V1 {
 
       [JsonProperty("credit", Required = Required.Always)]
       public decimal Credit { get; set; }
+
+      [JsonProperty("transactionType", Required = Required.Always)]
+      public TransactionType TransactionType { get; set; }
 
       [JsonProperty("timestamp", Required = Required.Always)]
       public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
