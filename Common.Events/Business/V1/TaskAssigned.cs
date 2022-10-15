@@ -14,6 +14,6 @@ namespace Common.Events.Business.V1 {
     [JsonProperty("taskId", Required = Required.Always)]
     public Guid TaskId { get; set; }
     [JsonProperty("timeStamp", Required = Required.Always)]
-    public DateTime TimeStamp { get; set; } = DateTime.Now;
+    public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
   }
 }

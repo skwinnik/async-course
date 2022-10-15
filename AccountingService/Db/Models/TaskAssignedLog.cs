@@ -9,6 +9,6 @@ namespace AccountingService.Db.Models {
     [DatabaseGenerated(DatabaseGeneratedOption.None)]
     public Guid UserId { get; set; } = Guid.Empty;
 
-    public DateTime TimeStamp { get; set; } = DateTime.Now;
+    public DateTime TimeStamp { get; set; } = DateTime.UtcNow;
   }
 }
